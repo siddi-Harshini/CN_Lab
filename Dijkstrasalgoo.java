@@ -109,3 +109,19 @@ public class Dijkstrasalgoo{
         sc.close();
     }
 }
+
+
+// Output
+// Enter the number of nodes:6
+// Enter the adjacency matrix for the graph(-1 for no edge):
+// 0 1 -1 2 -1 -1
+// 1 0 1 -1 -1 -1
+// -1 1 0 1 1 -1
+// 2 -1 1 0 2 -1
+// -1 -1 1 2 0 3
+// -1 -1 -1 -1 3 0
+// Enter the source node:a
+// Enter the destination node:f
+// Shortest path:
+// From a to f is:a b c e f length=6
+
