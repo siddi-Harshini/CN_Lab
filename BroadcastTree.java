@@ -36,3 +36,18 @@ public class BroadcastTree {
         sc.close();
     }
 }
+
+// OUTPUT :
+// Enter number of nodes: 5
+// Enter adjacency matrix (0/1):
+// 0 1 1 0 0
+// 1 0 0 1 1
+// 1 0 0 0 0
+// 0 1 0 0 0
+// 0 1 0 0 0
+// Enter root node: 1
+// Broadcast tree edges:
+// 1 - 0
+// 1 - 3
+// 1 - 4
+// 0 - 2
