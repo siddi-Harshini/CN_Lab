@@ -125,3 +125,108 @@ public class Dijkstrasalgoo{
 // Shortest path:
 // From a to f is:a b c e f length=6
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import java.util.*;
+public class Main {
+    static final int INF = 9999;
+    static final int MAX = 10;
+    static void printPath(int[] parent, int j) {
+        if (parent[j] == -1) {
+            System.out.print(j);
+            return;
+        }
+        printPath(parent, parent[j]);
+        System.out.print(" -> " + j);
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int[][] graph = new int[MAX][MAX];
+        int[] dist = new int[MAX];
+        boolean[] visited = new boolean[MAX];
+        int[] parent = new int[MAX];
+
+        System.out.print("Enter number of nodes: ");
+        int n = sc.nextInt();
+
+        System.out.println("Enter adjacency matrix:");
+        for (int i = 0; i < n; i++)
+            for (int j = 0; j < n; j++)
+                graph[i][j] = sc.nextInt();
+
+        System.out.printf("Enter starting node (0 to %d): ", n - 1);
+        int start = sc.nextInt();
+
+        // Initialize distances and tracking arrays
+        Arrays.fill(dist, INF);
+        Arrays.fill(visited, false);
+        Arrays.fill(parent, -1);
+        dist[start] = 0;
+
+        // Dijkstra's algorithm
+        for (int count = 0; count < n - 1; count++) {
+            int min = INF, u = -1;
+
+            for (int i = 0; i < n; i++) {
+                if (!visited[i] && dist[i] < min) {
+                    min = dist[i];
+                    u = i;
+                }
+            }
+
+            if (u == -1) break;
+            visited[u] = true;
+
+            for (int v = 0; v < n; v++) {
+                if (graph[u][v] != 0 && !visited[v] && dist[u] + graph[u][v] < dist[v]) {
+                    dist[v] = dist[u] + graph[u][v];
+                    parent[v] = u;
+                }
+            }
+        }
+        System.out.println("\nPaths from node " + start + ":");
+        for (int i = 0; i < n; i++) {
+            if (dist[i] != INF) {
+                printPath(parent, i);
+                System.out.println();
+            }
+        }
+    }
+}
+
+INPUT:
+Enter number of nodes: 7
+Enter adjacency matrix:
+0 2 6 0 0 0 0
+2 0 0 5 0 0 0
+6 0 0 8 0 0 0
+5 8 0 0 10 15 0
+0 0 0 10 0 0 2
+0 0 15 0 0 0 6
+0 0 0 0 2 6 0
+Enter starting node (0 to 6): 0
+
+OUTPUT:
+Shortest distances and paths from node 0:
+To node 0: 0, Path: 0
+To node 1: 2, Path: 0 -> 1
+To node 2: 6, Path: 0 -> 2
+To node 3: 7, Path: 0 -> 1 -> 3
+To node 4: 17, Path: 0 -> 1 -> 3 -> 4
+To node 5: 22, Path: 0 -> 1 -> 3 -> 5
+To node 6: 19, Path: 0 -> 1 -> 3 -> 4 -> 6
+
+
