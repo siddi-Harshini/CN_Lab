@@ -1,0 +1,140 @@
+
+import java.util.Scanner;
+
+public class CRCExample {
+
+    // XOR two binary strings of equal length and return result (no leading truncation)
+    private static String xor(String a, String b) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < a.length(); i++) {
+            sb.append(a.charAt(i) == b.charAt(i) ? '0' : '1');
+        }
+        return sb.toString();
+    }
+
+    // Perform binary division (mod-2) of dividend by divisor.
+    // dividend and divisor are strings of '0'/'1'. divisor length = r+1.
+    // Returns the remainder (length <= divisor.length()-1). Leading zeros are kept as needed.
+    private static String computeRemainder(String dividend, String divisor) {
+        int n = dividend.length();
+        int m = divisor.length();
+        // Work on a mutable copy:
+        StringBuilder work = new StringBuilder(dividend);
+
+        for (int i = 0; i <= n - m; i++) {
+            if (work.charAt(i) == '1') {
+                // XOR the substring starting at i with divisor
+                for (int j = 0; j < m; j++) {
+                    char orig = work.charAt(i + j);
+                    char d = divisor.charAt(j);
+                    char res = (orig == d) ? '0' : '1';
+                    work.setCharAt(i + j, res);
+                }
+            }
+            // if it's '0' just skip (effectively XOR with zeros)
+        }
+
+        // remainder is the last (m-1) bits of work
+        return work.substring(n - (m - 1));
+    }
+
+    // Helper: pads a remainder to length r (m-1) with leading zeros if required
+    private static String padRemainder(String rem, int r) {
+        if (rem.length() >= r) {
+            return rem;
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < r - rem.length(); i++) {
+            sb.append('0');
+        }
+        sb.append(rem);
+        return sb.toString();
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+
+        System.out.println("Choose CRC polynomial:");
+        System.out.println("1) CRC-12  : x^12 + x^11 + x^3 + x^2 + x + 1");
+        System.out.println("2) CRC-16  : x^16 + x^15 + x^2 + 1");
+        System.out.println("3) CRC-CCITT: x^16 + x^12 + x^5 + 1 (0x1021)");
+        System.out.print("Enter choice (1/2/3): ");
+        int choice = Integer.parseInt(sc.nextLine().trim());
+
+        String generator;
+        int r; // degree
+        switch (choice) {
+            case 1:
+                generator = "1100000001111"; // 13 bits, degree 12
+                r = 12;
+                break;
+            case 2:
+                generator = "11000000000000101"; // 17 bits, degree 16
+                r = 16;
+                break;
+            case 3:
+                generator = "10001000000100001"; // 17 bits, degree 16 (CRC-CCITT)
+                r = 16;
+                break;
+            default:
+                System.out.println("Invalid choice. Exiting.");
+                sc.close();
+                return;
+        }
+
+        System.out.print("Enter data bits (e.g. 11011): ");
+        String data = sc.nextLine().trim();
+        // Basic validation
+        if (!data.matches("[01]+")) {
+            System.out.println("Data must be a binary string of 0s and 1s.");
+            sc.close();
+            return;
+        }
+
+        // Append r zeros
+        StringBuilder appended = new StringBuilder(data);
+        for (int i = 0; i < r; i++) {
+            appended.append('0');
+        }
+        String dividend = appended.toString();
+
+        // Compute remainder
+        String remainder = computeRemainder(dividend, generator);
+        remainder = padRemainder(remainder, r); // ensure length r
+
+        // Final codeword = original data + remainder
+        String codeword = data + remainder;
+
+        System.out.println("\nGenerator: " + generator + "  (degree " + r + ")");
+        System.out.println("Data       : " + data);
+        System.out.println("Appended   : " + dividend);
+        System.out.println("Remainder  : " + remainder);
+        System.out.println("Codeword   : " + codeword);
+
+        // Verify at receiver: divide codeword by generator -> remainder should be all zeros
+        String checkRem = computeRemainder(codeword, generator);
+        // pad
+        checkRem = padRemainder(checkRem, r);
+        System.out.println("\nVerifying transmitted codeword at receiver...");
+        System.out.println("Remainder after dividing codeword: " + checkRem);
+        boolean ok = checkRem.chars().allMatch(ch -> ch == '0');
+        System.out.println(ok ? "No error detected." : "Error detected in received codeword.");
+
+        // Optional: let user enter a different received bitstring to see detection
+        System.out.print("\n(Option) Enter a received string to test (or press Enter to skip): ");
+        String received = sc.nextLine().trim();
+        if (!received.isEmpty()) {
+            if (!received.matches("[01]+")) {
+                System.out.println("Received must be binary. Exiting.");
+            } else {
+                String rRem = computeRemainder(received, generator);
+                rRem = padRemainder(rRem, r);
+                System.out.println("Remainder for received string: " + rRem);
+                boolean ok2 = rRem.chars().allMatch(ch -> ch == '0');
+                System.out.println(ok2 ? "Receiver: No error detected." : "Receiver: Error detected.");
+            }
+        }
+
+        sc.close();
+    }
+}
